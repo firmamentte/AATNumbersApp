@@ -1,0 +1,79 @@
+﻿@page "/"
+@rendermode InteractiveServer
+@using AATNumbersApp.BLL
+@using AATNumbersApp.BLL.BLLClasses
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Home</PageTitle>
+
+<h1>AAT Numbers App</h1>
+
+<p role="status">Total Odd Numbers: @StaticClass.GlobalVariable.TotalOddNumbers.ToString("N0")</p>
+<p role="status">Total Even Numbers: @StaticClass.GlobalVariable.TotalEvenNumbers.ToString("N0")</p>
+<p role="status">Total Numbers: @StaticClass.GlobalVariable.Numbers.Count.ToString("N0")</p>
+
+<button class="btn btn-primary" disabled="@isComputeDataDisabled" @onclick="ComputeData">Compute Data</button>
+<button class="btn btn-primary" disabled="@isPersistDataDisabled" @onclick="PersistData">@persistDataText</button>
+<button class="btn btn-primary" disabled="@isDownloadXMLDisabled" @onclick="DownloadXML">@downloadXMLText</button>
+<button class="btn btn-primary" disabled="@isDownloadBinaryDisabled" @onclick="DownloadBinary">@downloadBinaryText</button>
+
+@code {
+    public bool isComputeDataDisabled { get; set; } = false;
+
+    public bool isPersistDataDisabled { get; set; } = true;
+    public string persistDataText { get; set; } = "Persist Data";
+
+    public bool isDownloadXMLDisabled { get; set; } = true;
+    public string downloadXMLText { get; set; } = "Download XML";
+
+    public bool isDownloadBinaryDisabled { get; set; } = true;
+    public string downloadBinaryText { get; set; } = "Download Binary";
+
+    private void ComputeData()
+    {
+        isComputeDataDisabled = true;
+
+        ComputeDataBLL computeDataBLL = new();
+        computeDataBLL.ComputeData();
+        Thread.Sleep(3000);
+        computeDataBLL.ShowTotals();
+
+        isPersistDataDisabled = false;
+    }
+
+    private async Task PersistData()
+    {
+        isPersistDataDisabled = true;
+        persistDataText = "Persisting Data...";
+
+        await new PersistDataBLL().PersistData();
+
+        persistDataText = "Persist Data";
+
+        isDownloadXMLDisabled = false;
+        isDownloadBinaryDisabled = false;
+    }
+
+    private async Task DownloadXML()
+    {
+        isDownloadXMLDisabled = true;
+        downloadXMLText = "Downloading XML...";
+
+        await JSRuntime.InvokeVoidAsync("BlazorDownloadFile", "XMLFile.xml", "application/xml", await new DownloadBLL().CreateXMLFile());
+
+        isDownloadXMLDisabled = false;
+        downloadXMLText = "Download XML";
+    }
+
+    private async Task DownloadBinary()
+    {
+        isDownloadBinaryDisabled = true;
+        downloadBinaryText = "Downloading Binary...";
+
+        await JSRuntime.InvokeVoidAsync("BlazorDownloadFile", "BinFile.bin", "application/bin", await new DownloadBLL().CreateBinFile());
+
+        isDownloadBinaryDisabled = false;
+        downloadBinaryText = "Download Binary";
+    }
+}
+
