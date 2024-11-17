@@ -25,9 +25,7 @@ namespace AATNumbersApp.BLL
         {
             public static void InitializeApplicationSettings(IConfiguration configuration)
             {
-                if (Data.StaticClass.DatabaseHelper.ConnectionString != null)
-                    return;
-                Data.StaticClass.DatabaseHelper.ConnectionString = configuration["ConnectionStrings:DatabasePath"];
+                Data.StaticClass.DatabaseHelper.ConnectionString ??= configuration["ConnectionStrings:DatabasePath"];
             }
         }
     }
